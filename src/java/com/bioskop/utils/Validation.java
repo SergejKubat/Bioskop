@@ -21,6 +21,6 @@ public class Validation {
     }
 
     public static boolean proveriBroj(String brojTelefona) {
-        return Pattern.matches("\\d{9,10}", brojTelefona);
+        return Pattern.matches("06[0-9]/[0-9]{3}/[0-9]{3,4}", brojTelefona);
     }
 }

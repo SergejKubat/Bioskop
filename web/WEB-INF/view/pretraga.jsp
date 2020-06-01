@@ -14,6 +14,7 @@
                     </ul>
                     <div class="card-body">
                         <a href="${film.trejler}" class="card-link">Trejler</a>
+                        <a href="film?id=${film.id}" class="card-link">Detalji</a>
                     </div>
                 </div>
 
