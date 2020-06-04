@@ -1,6 +1,9 @@
 package com.bioskop.db;
 
+import com.bioskop.model.Bioskop;
 import com.bioskop.model.Film;
+import com.bioskop.model.Grad;
+import com.bioskop.model.Klub;
 import com.bioskop.model.Korisnik;
 import com.bioskop.utils.HashUtil;
 import java.sql.Connection;
@@ -77,6 +80,40 @@ public class DBHelper {
         return null;
     }
 
+    public static Film findFilmById(int id) {
+
+        Film film = new Film();
+
+        try {
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            connection.setAutoCommit(false);
+
+            String query = "SELECT * FROM film WHERE film.FILM_ID = ?";
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, id);
+                ResultSet rezultat = statement.executeQuery();
+                while (rezultat.next()) {
+                    film.setId(rezultat.getInt(1));
+                    film.setNaziv(rezultat.getString(2));
+                    film.setGodina(rezultat.getInt(3));
+                    film.setOpis(rezultat.getString(4));
+                    film.setSlika(rezultat.getString(5));
+                    film.setTrejler(rezultat.getString(6));
+                }
+                connection.commit();
+                statement.close();
+                return film;
+            } catch (SQLException ex) {
+                connection.rollback();
+            }
+
+            connection.close();
+        } catch (SQLException ex) {
+        }
+        return null;
+    }
+
     public static Korisnik signIn(String email, String password) {
 
         Korisnik k = null;
@@ -109,13 +146,13 @@ public class DBHelper {
     }
 
     public static boolean signUp(String ime, String prezime, String email, String brojTelefona, String lozinka) {
-        
+
         boolean success = false;
-        
+
         if (checkEmail(email)) {
             return success;
         }
-        
+
         try {
             connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
             connection.setAutoCommit(false);
@@ -140,7 +177,7 @@ public class DBHelper {
             connection.close();
         } catch (SQLException ex) {
         }
-        
+
         return success;
     }
 
@@ -172,5 +209,100 @@ public class DBHelper {
         }
         return exist;
 
+    }
+
+    public static List<Klub> findAllKlub() {
+        try {
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            connection.setAutoCommit(false);
+
+            String query = "SELECT * FROM klub;";
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                List<Klub> klubovi = new ArrayList<>();
+                ResultSet rezultat = statement.executeQuery();
+                while (rezultat.next()) {
+                    Klub klub = new Klub();
+                    klub.setKLUB_ID(rezultat.getInt(1));
+                    klub.setKLUB_NAZIV(rezultat.getString(2));
+                    klub.setKLUB_POGODNOSTI(rezultat.getString(3));
+                    klub.setKLUB_CLANARINA(rezultat.getFloat(4));
+                    klub.setSLIKA_KLUBA(rezultat.getString(5));
+
+                    klubovi.add(klub);
+                }
+                connection.commit();
+                statement.close();
+                return klubovi;
+            } catch (SQLException ex) {
+                connection.rollback();
+            }
+
+            connection.close();
+        } catch (SQLException ex) {
+        }
+        return null;
+    }
+
+    public static List<Grad> findAllGrad() {
+        try {
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            connection.setAutoCommit(false);
+
+            String query = "SELECT * FROM grad;";
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                List<Grad> gradovi = new ArrayList<>();
+                ResultSet rezultat = statement.executeQuery();
+                while (rezultat.next()) {
+                    Grad grad = new Grad();
+                    grad.setGRAD_ID(rezultat.getInt(1));
+                    grad.setGRAD_IME(rezultat.getString(2));
+                    gradovi.add(grad);
+                }
+                connection.commit();
+                statement.close();
+                return gradovi;
+            } catch (SQLException ex) {
+                connection.rollback();
+            }
+
+            connection.close();
+        } catch (SQLException ex) {
+        }
+        return null;
+    }
+
+    public static List<Bioskop> findBioskopByGradId(int gradId) {
+        try {
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            connection.setAutoCommit(false);
+
+            String query = "SELECT * FROM bioskop WHERE bioskop.GRAD_ID = ?;";
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, gradId);
+                List<Bioskop> bioskopi = new ArrayList<>();
+                ResultSet rezultat = statement.executeQuery();
+                while (rezultat.next()) {
+                    Bioskop bioskop = new Bioskop();
+                    bioskop.setBIOSKOP_ID(rezultat.getInt(1));
+                    bioskop.setGRAD_ID(rezultat.getInt(2));
+                    bioskop.setBIOSKOP_NAZIV(rezultat.getString(3));
+                    bioskop.setBIOSKOP_ADRESA(rezultat.getString(4));
+                    bioskop.setBIOSKOP_BR_TEL(rezultat.getString(5));
+                    bioskopi.add(bioskop);
+                }
+                connection.commit();
+                statement.close();
+                return bioskopi;
+            } catch (SQLException ex) {
+                connection.rollback();
+            }
+
+            connection.close();
+        } catch (SQLException ex) {
+        }
+        return null;
     }
 }

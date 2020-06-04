@@ -4,6 +4,8 @@ import com.bioskop.db.DBHelper;
 import com.bioskop.model.Korisnik;
 import com.bioskop.utils.Validation;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,6 +20,8 @@ public class ControllerServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String putanja = request.getServletPath();
+        HttpSession sesija = request.getSession();
+        List<String> stilovi = new ArrayList<>();
 
         if (putanja.equals("/prijava")) {
             // TODO: Napisati kod za prijavu
@@ -25,17 +29,25 @@ public class ControllerServlet extends HttpServlet {
             // TODO: Napisati kod za registraciju
         } else if (putanja.equals("/pretraga")) {
             String q = (String) request.getParameter("search");
-            System.out.println("Query:" + q);
             request.setAttribute("filmovi", DBHelper.findAllFilm().stream().filter(e -> e.getNaziv().toLowerCase().contains(q.toLowerCase())).collect(Collectors.toList()));
         } else if (putanja.equals("/nalog")) {
             // TODO: Napisati kod za nalog
         } else if (putanja.equals("/rezervacija")) {
             // TODO: Napisati kod za rezervacija
         } else if (putanja.equals("/film")) {
-            // TODO: Napisati kod za film
+            Integer id = Integer.parseInt((String) request.getParameter("id"));
+            request.setAttribute("film", DBHelper.findFilmById(id));
+            stilovi.add("shop-item");
+            
         } else if (putanja.equals("/klubovi")) {
-            // TODO: Napisati kod za klubove
+            request.setAttribute("klubovi", DBHelper.findAllKlub());
+        } else if (putanja.equals("/grad")) {
+            Integer id = Integer.parseInt((String) request.getParameter("id"));
+            request.setAttribute("bioskopi", DBHelper.findBioskopByGradId(id));
         }
+        
+        request.setAttribute("stilovi", stilovi);
+        request.setAttribute("gradovi", DBHelper.findAllGrad());
 
         String adresa = "/WEB-INF/view/" + putanja + ".jsp";
         try {
@@ -49,7 +61,6 @@ public class ControllerServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String putanja = request.getServletPath();
-
         HttpSession sesija = request.getSession();
 
         if (putanja.equals("/prijava")) {
