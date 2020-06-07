@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 public class Validation {
 
     public static boolean proveriIme(String ime) {
-        return Pattern.matches("[a-zA-Z0-9]{3,32}", ime);
+        return Pattern.matches("[a-zA-Z]{3,32}", ime);
     }
 
     public static boolean proveriLozinku(String lozinka) {
@@ -21,6 +21,6 @@ public class Validation {
     }
 
     public static boolean proveriBroj(String brojTelefona) {
-        return Pattern.matches("06[0-9]/[0-9]{3}/[0-9]{3,4}", brojTelefona);
+        return Pattern.matches("06[0-9]-[0-9]{3}-[0-9]{3,4}", brojTelefona);
     }
 }

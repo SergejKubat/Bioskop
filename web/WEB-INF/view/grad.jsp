@@ -1,3 +1,5 @@
 <c:forEach var="bioskop" items="${bioskopi}">
-    <p>${bioskop.BIOSKOP_NAZIV}</p>
+    <h3>${bioskop.BIOSKOP_NAZIV}</h3>
+    <p>${bioskop.BIOSKOP_ADRESA}</p>
+    <p>${bioskop.BIOSKOP_BR_TEL}</p>
 </c:forEach>

@@ -5,6 +5,7 @@ import com.bioskop.model.Korisnik;
 import com.bioskop.utils.Validation;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.sql.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.ServletException;
@@ -22,6 +23,7 @@ public class ControllerServlet extends HttpServlet {
         String putanja = request.getServletPath();
         HttpSession sesija = request.getSession();
         List<String> stilovi = new ArrayList<>();
+        Korisnik user = (Korisnik) sesija.getAttribute("korisnik");
 
         if (putanja.equals("/prijava")) {
             // TODO: Napisati kod za prijavu
@@ -31,7 +33,7 @@ public class ControllerServlet extends HttpServlet {
             String q = (String) request.getParameter("search");
             request.setAttribute("filmovi", DBHelper.findAllFilm().stream().filter(e -> e.getNaziv().toLowerCase().contains(q.toLowerCase())).collect(Collectors.toList()));
         } else if (putanja.equals("/nalog")) {
-            // TODO: Napisati kod za nalog
+            request.setAttribute("korisnik", user);
         } else if (putanja.equals("/rezervacija")) {
             // TODO: Napisati kod za rezervacija
         } else if (putanja.equals("/film")) {
@@ -44,10 +46,26 @@ public class ControllerServlet extends HttpServlet {
         } else if (putanja.equals("/grad")) {
             Integer id = Integer.parseInt((String) request.getParameter("id"));
             request.setAttribute("bioskopi", DBHelper.findBioskopByGradId(id));
+        } else if (putanja.equals("/odjava")) {
+            if (user != null) {
+                sesija.removeAttribute("korisnik");
+                sesija.invalidate();
+                user = null;
+            }
+            putanja = "/prijava";
+        } else if (putanja.equals("/clanstvo")) {
+            if (user != null) {
+                int id = Integer.parseInt((String) request.getParameter("id"));
+                request.setAttribute("klub", DBHelper.findKlubById(id));
+            }
+            else {
+                putanja = "/prijava";
+            }
         }
         
         request.setAttribute("stilovi", stilovi);
         request.setAttribute("gradovi", DBHelper.findAllGrad());
+        request.setAttribute("korisnik", user);
 
         String adresa = "/WEB-INF/view/" + putanja + ".jsp";
         try {
@@ -64,17 +82,27 @@ public class ControllerServlet extends HttpServlet {
         HttpSession sesija = request.getSession();
 
         if (putanja.equals("/prijava")) {
+            String poruka = "";
+            
             String email = (String) request.getParameter("email");
             String password = (String) request.getParameter("password");
+            
             System.out.println("Email:" + email);
             System.out.println("Password:" + password);
             boolean isValid = Validation.proveriEmail(email) && Validation.proveriLozinku(password);
             if (isValid) {
                 Korisnik user = DBHelper.signIn(email, password);
+                if (user != null) {
+                    sesija.setAttribute("korisnik", user);
+                    putanja = "/nalog";
+                }
+                else {
+                    poruka = "Prijava nije uspešna!";
+                }
             } else {
-                String poruka = "Prijava je neuspešna!";
-                request.setAttribute("poruka", poruka);
+                poruka = "Podaci su u pogrešnom formatu!";
             }
+            request.setAttribute("poruka", poruka);
         } else if (putanja.equals("/registracija")) {
             String poruka;
 
@@ -95,11 +123,15 @@ public class ControllerServlet extends HttpServlet {
             } else {
                 poruka = "Podaci koje ste uneli nisu u validnom formatu!";
             }
-            request.setAttribute("poruka", "poruka");
+            request.setAttribute("poruka", poruka);
         } else if (putanja.equals("/rezervisi")) {
             // TODO: Napisati kod za rezervaciju
         } else if (putanja.equals("/uclanjenje")) {
-            // TODO: Napisati kod za uclanjenje
+            int korisnikId = Integer.parseInt((String) request.getParameter("korisnikId"));
+            int klubId = Integer.parseInt((String) request.getParameter("klubId"));
+            Date datum = new Date(System.currentTimeMillis());
+            DBHelper.uclanjenje(korisnikId, klubId, datum);
+            putanja = "/nalog";
         }
 
         String adresa = "/WEB-INF/view/" + putanja + ".jsp";

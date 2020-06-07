@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.sql.Date;
 import java.util.List;
 
 public class DBHelper {
@@ -27,7 +28,7 @@ public class DBHelper {
             connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
             connection.setAutoCommit(false);
 
-            String query = "INSERT INTO film (FILM_ID, FILM_NAZIV, FILM_GODINA, FILM_OPIS, FILM_SLIKA, FIRMA_TREJLER VALUES (NULL, ?, ?, ?, ?, ?);";
+            String query = "INSERT INTO film (FILM_ID, FILM_NAZIV, FILM_GODINA, FILM_OPIS, FILM_SLIKA, FIRMA_TREJLER) VALUES (NULL, ?, ?, ?, ?, ?);";
 
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.setString(1, naziv);
@@ -35,6 +36,29 @@ public class DBHelper {
                 statement.setString(3, opis);
                 statement.setString(4, slika);
                 statement.setString(5, trejler);
+                statement.executeUpdate();
+                connection.commit();
+                statement.close();
+            } catch (SQLException ex) {
+                connection.rollback();
+            }
+
+            connection.close();
+        } catch (SQLException ex) {
+        }
+    }
+    
+    public static void uclanjenje(int korisnikId, int klubId, Date datum) {
+        try {
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            connection.setAutoCommit(false);
+
+            String query = "INSERT INTO korisnik_klub (KK_ID, KORISNIK_ID, KLUB_ID, KK_DATUM_UCLANJENJA) VALUES (NULL, ?, ?, ?);";
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, korisnikId);
+                statement.setInt(2, klubId);
+                statement.setDate(3, datum);
                 statement.executeUpdate();
                 connection.commit();
                 statement.close();
@@ -104,6 +128,38 @@ public class DBHelper {
                 connection.commit();
                 statement.close();
                 return film;
+            } catch (SQLException ex) {
+                connection.rollback();
+            }
+
+            connection.close();
+        } catch (SQLException ex) {
+        }
+        return null;
+    }
+    
+    public static Klub findKlubById(int id) {
+        Klub klub = new Klub();
+
+        try {
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+            connection.setAutoCommit(false);
+
+            String query = "SELECT * FROM klub WHERE klub.KLUB_ID = ?";
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, id);
+                ResultSet rezultat = statement.executeQuery();
+                while (rezultat.next()) {
+                    klub.setKLUB_ID(rezultat.getInt(1));
+                    klub.setKLUB_NAZIV(rezultat.getString(2));
+                    klub.setKLUB_POGODNOSTI(rezultat.getString(3));
+                    klub.setKLUB_CLANARINA(rezultat.getInt(4));
+                    klub.setSLIKA_KLUBA(rezultat.getString(5));
+                }
+                connection.commit();
+                statement.close();
+                return klub;
             } catch (SQLException ex) {
                 connection.rollback();
             }
